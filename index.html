@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>⛽ OILLY 정산 계산기</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+}
+
+body{
+margin:0;
+background:#111;
+font-family:sans-serif;
+padding:8px;
+overflow:hidden;
+}
+
+.container{
+width:100%;
+max-width:1280px;
+height:calc(100vh - 16px);
+margin:auto;
+background:white;
+border-radius:18px;
+overflow:hidden;
+display:flex;
+flex-direction:column;
+}
+
+.header{
+background:#111;
+padding:12px;
+text-align:center;
+flex-shrink:0;
+}
+
+.header h1{
+margin:0;
+font-size:26px;
+color:#ff6a00;
+}
+
+.header p{
+margin-top:4px;
+font-size:12px;
+color:#ccc;
+}
+
+.content{
+flex:1;
+display:grid;
+grid-template-columns:1fr 340px;
+gap:10px;
+padding:10px;
+overflow:hidden;
+}
+
+.left-panel{
+display:flex;
+flex-direction:column;
+gap:10px;
+overflow:auto;
+padding-right:4px;
+}
+
+.right-panel{
+overflow:hidden;
+}
+
+.section{
+background:#f7f7f7;
+border-radius:14px;
+padding:10px;
+}
+
+.title{
+font-size:15px;
+font-weight:bold;
+margin-bottom:8px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:6px;
+}
+
+button{
+border:none;
+border-radius:9px;
+padding:8px;
+font-size:13px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.price-btn{
+background:#ececec;
+}
+
+.price-btn.active{
+background:#ff6a00;
+color:white;
+}
+
+.delivery-btn{
+background:#ececec;
+}
+
+.delivery-btn.active{
+background:#ff6a00;
+color:white;
+}
+
+.row{
+display:flex;
+align-items:center;
+gap:6px;
+margin-bottom:6px;
+}
+
+.row input{
+flex:1;
+padding:8px;
+font-size:13px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+.counter-line{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:8px;
+}
+
+.counter-left{
+display:flex;
+align-items:center;
+gap:6px;
+font-size:14px;
+font-weight:bold;
+}
+
+.counter{
+display:flex;
+align-items:center;
+gap:4px;
+}
+
+.counter button{
+width:28px;
+height:28px;
+padding:0;
+font-size:16px;
+background:#ff6a00;
+color:white;
+}
+
+.count{
+width:22px;
+text-align:center;
+font-size:15px;
+font-weight:bold;
+}
+
+.small{
+font-size:11px;
+color:#666;
+margin-top:2px;
+}
+
+.result{
+height:100%;
+background:#111;
+color:white;
+border-radius:16px;
+padding:14px;
+display:flex;
+flex-direction:column;
+}
+
+.result-title{
+font-size:22px;
+font-weight:bold;
+color:#ff6a00;
+margin-bottom:12px;
+}
+
+.result pre{
+white-space:pre-wrap;
+line-height:1.45;
+font-size:12px;
+flex:1;
+margin:0;
+overflow:auto;
+}
+
+.total{
+font-size:34px;
+font-weight:bold;
+color:#ff6a00;
+text-align:right;
+margin-top:8px;
+flex-shrink:0;
+}
+
+.action-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:6px;
+}
+
+.calc-btn{
+background:#ff6a00;
+color:white;
+}
+
+.copy-btn{
+background:#111;
+color:white;
+}
+
+.reset-btn{
+background:#ddd;
+}
+
+@media(max-width:900px){
+
+body{
+overflow:auto;
+}
+
+.container{
+height:auto;
+}
+
+.content{
+grid-template-columns:1fr;
+overflow:visible;
+}
+
+.left-panel{
+overflow:visible;
+}
+
+.result{
+height:auto;
+min-height:400px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<h1>⛽ OILLY 정산 계산기</h1>
+<p>💰 자동 정산 시스템</p>
+</div>
+
+<div class="content">
+
+<div class="left-panel">
+
+<div class="section">
+
+<div class="title">
+💰 리터 단가 선택
+</div>
+
+<div class="grid" id="priceButtons"></div>
+
+<div class="small">
+현재 단가:
+<span id="selectedPrice">20만</span>
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title">
+🚗 주유 리터 입력
+</div>
+
+<div id="literContainer"></div>
+
+<div class="action-grid">
+
+<button onclick="addRow()">
+➕ 줄추가
+</button>
+
+<button onclick="removeRow()">
+➖ 줄삭제
+</button>
+
+<button class="calc-btn" onclick="calculate()">
+🧮 계산
+</button>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title">
+📦 추가 항목
+</div>
+
+<div class="counter-line">
+
+<div class="counter-left">
+🛢️ 기름통
+</div>
+
+<div class="counter">
+
+<button onclick="changeCount('tank',-1)">
+-
+</button>
+
+<div class="count" id="tank">
+0
+</div>
+
+<button onclick="changeCount('tank',1)">
++
+</button>
+
+</div>
+
+</div>
+
+<div class="small">
+📦 단가별 가격 자동 적용
+</div>
+
+<br>
+
+<div class="counter-line">
+
+<div class="counter-left">
+🧴 코팅제
+</div>
+
+<div class="counter">
+
+<button onclick="changeCount('coat',-1)">
+-
+</button>
+
+<div class="count" id="coat">
+0
+</div>
+
+<button onclick="changeCount('coat',1)">
++
+</button>
+
+</div>
+
+</div>
+
+<div class="small">
+💰 1개당 500만
+</div>
+
+<br>
+
+<div class="counter-line">
+
+<div class="counter-left">
+✨ 세광
+</div>
+
+<div class="counter">
+
+<button onclick="changeCount('segwang',-1)">
+-
+</button>
+
+<div class="count" id="segwang">
+0
+</div>
+
+<button onclick="changeCount('segwang',1)">
++
+</button>
+
+</div>
+
+</div>
+
+<div class="small">
+💰 1개당 1000만
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title">
+🚚 배달 선택
+</div>
+
+<div class="grid" id="deliveryButtons"></div>
+
+<br>
+
+<div class="counter-line">
+
+<div class="counter-left">
+🚚 배달 횟수
+</div>
+
+<div class="counter">
+
+<button onclick="changeCount('deliveryCount',-1)">
+-
+</button>
+
+<div class="count" id="deliveryCount">
+0
+</div>
+
+<button onclick="changeCount('deliveryCount',1)">
++
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="action-grid">
+
+<button class="copy-btn" onclick="copyText()">
+📋 복사
+</button>
+
+<button class="reset-btn" onclick="resetAll()">
+🔄 초기화
+</button>
+
+</div>
+
+</div>
+
+<div class="right-panel">
+
+<div class="result">
+
+<div class="result-title">
+🧾 OILLY 정산서
+</div>
+
+<pre id="receipt"></pre>
+
+<div class="total" id="totalText">
+0만
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const prices=[16,18,20,22,24];
+
+const tankPrices={
+16:500,
+18:550,
+20:600,
+22:650,
+24:700
+};
+
+let selectedPrice=20;
+
+let selectedDelivery="없음";
+
+const deliveryPrice={
+"없음":0,
+"남부":500,
+"북부":1000
+};
+
+const counts={
+tank:0,
+coat:0,
+segwang:0,
+deliveryCount:0
+};
+
+function renderPrices(){
+
+const container=document.getElementById("priceButtons");
+
+container.innerHTML="";
+
+prices.forEach(price=>{
+
+const btn=document.createElement("button");
+
+btn.innerText=price+"만";
+
+btn.className="price-btn";
+
+if(price===selectedPrice){
+btn.classList.add("active");
+}
+
+btn.onclick=()=>{
+
+selectedPrice=price;
+
+renderPrices();
+
+calculate();
+
+};
+
+container.appendChild(btn);
+
+});
+
+document.getElementById("selectedPrice").innerText=
+selectedPrice+"만";
+
+}
+
+function renderDelivery(){
+
+const container=document.getElementById("deliveryButtons");
+
+container.innerHTML="";
+
+["없음","남부","북부"].forEach(name=>{
+
+const btn=document.createElement("button");
+
+btn.innerText=name;
+
+btn.className="delivery-btn";
+
+if(name===selectedDelivery){
+btn.classList.add("active");
+}
+
+btn.onclick=()=>{
+
+selectedDelivery=name;
+
+renderDelivery();
+
+calculate();
+
+};
+
+container.appendChild(btn);
+
+});
+
+}
+
+function addRow(){
+
+const container=document.getElementById("literContainer");
+
+const row=document.createElement("div");
+
+row.className="row";
+
+row.innerHTML=`
+<span>🚗</span>
+<input type="number" class="literInput" placeholder="리터 입력">
+<span>L</span>
+`;
+
+container.appendChild(row);
+
+}
+
+function removeRow(){
+
+const container=document.getElementById("literContainer");
+
+if(container.children.length>1){
+container.removeChild(container.lastElementChild);
+}
+
+}
+
+function changeCount(type,amount){
+
+counts[type]+=amount;
+
+if(counts[type]<0){
+counts[type]=0;
+}
+
+document.getElementById(type).innerText=
+counts[type];
+
+calculate();
+
+}
+
+function calculate(){
+
+const inputs=document.querySelectorAll(".literInput");
+
+let totalLiter=0;
+
+inputs.forEach(input=>{
+
+totalLiter+=Number(input.value)||0;
+
+});
+
+const fuelCost=totalLiter*selectedPrice;
+
+const tankCost=
+counts.tank*tankPrices[selectedPrice];
+
+const coatCost=
+counts.coat*500;
+
+const segwangCost=
+counts.segwang*1000;
+
+const deliveryCost=
+counts.deliveryCount*
+deliveryPrice[selectedDelivery];
+
+const total=
+fuelCost+
+tankCost+
+coatCost+
+segwangCost+
+deliveryCost;
+
+let text=`💰 단가: ${selectedPrice}만
+
+🚗 총 리터:
+${totalLiter}L
+
+⛽ 기름값:
+${fuelCost}만
+
+🛢️ 기름통 ${counts.tank}개:
+${tankCost}만
+
+🧴 코팅제 ${counts.coat}개:
+${coatCost}만
+
+✨ 세광 ${counts.segwang}개:
+${segwangCost}만
+
+🚚 ${selectedDelivery} 배달
+${counts.deliveryCount}회:
+${deliveryCost}만`;
+
+document.getElementById("receipt").innerText=text;
+
+document.getElementById("totalText").innerText=
+`${total}만`;
+
+}
+
+function copyText(){
+
+const text=
+document.getElementById("receipt").innerText+
+`\n\n💵 총액:\n`+
+document.getElementById("totalText").innerText;
+
+navigator.clipboard.writeText(text);
+
+alert("📋 복사 완료!");
+
+}
+
+function resetAll(){
+
+selectedPrice=20;
+
+selectedDelivery="없음";
+
+counts.tank=0;
+counts.coat=0;
+counts.segwang=0;
+counts.deliveryCount=0;
+
+document.getElementById("tank").innerText=0;
+document.getElementById("coat").innerText=0;
+document.getElementById("segwang").innerText=0;
+document.getElementById("deliveryCount").innerText=0;
+
+document.getElementById("literContainer").innerHTML="";
+
+addRow();
+
+renderPrices();
+
+renderDelivery();
+
+calculate();
+
+}
+
+renderPrices();
+renderDelivery();
+addRow();
+calculate();
+
+</script>
+
+</body>
+</html>
