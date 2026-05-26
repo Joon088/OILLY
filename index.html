@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>⛽ OILLY 정산 계산기</title>
 
 <style>
@@ -532,6 +531,25 @@ const deliveryPrice={
 "북부":1000
 };
 
+function formatMoney(man){
+
+man=Number(man)||0;
+
+const eok=Math.floor(man/10000);
+const rest=man%10000;
+
+if(eok>0&&rest>0){
+return `${eok}억 ${rest.toLocaleString()}만`;
+}
+
+if(eok>0){
+return `${eok}억`;
+}
+
+return `${rest.toLocaleString()}만`;
+
+}
+
 function getNumber(id){
 
 const value=Number(document.getElementById(id).value);
@@ -719,25 +737,25 @@ let text=`💰 단가: ${selectedPrice}만
 ${totalLiter}L
 
 ⛽ 기름값:
-${fuelCost}만
+${formatMoney(fuelCost)}
 
 🛢️ 기름통 ${tankCount}개:
-${tankCost}만
+${formatMoney(tankCost)}
 
 🧴 코팅제 ${coatCount}개:
-${coatCost}만
+${formatMoney(coatCost)}
 
 ✨ 세광 ${segwangCount}개:
-${segwangCost}만
+${formatMoney(segwangCost)}
 
 🚚 ${selectedDelivery} 배달
 ${deliveryCount}회:
-${deliveryCost}만`;
+${formatMoney(deliveryCost)}`;
 
 document.getElementById("receipt").innerText=text;
 
 document.getElementById("totalText").innerText=
-`${total}만`;
+formatMoney(total);
 
 }
 
