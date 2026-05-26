@@ -162,11 +162,20 @@ background:#ff6a00;
 color:white;
 }
 
-.count{
-width:22px;
+.count-input{
+width:42px;
+height:28px;
+border:1px solid #ddd;
+background:white;
+border-radius:7px;
 text-align:center;
-font-size:15px;
+font-size:14px;
 font-weight:bold;
+outline:none;
+}
+
+.count-input:focus{
+border-color:#ff6a00;
 }
 
 .small{
@@ -331,9 +340,14 @@ min-height:400px;
 -
 </button>
 
-<div class="count" id="tank">
-0
-</div>
+<input
+type="number"
+class="count-input"
+id="tank"
+value="0"
+min="0"
+oninput="calculate()"
+>
 
 <button onclick="changeCount('tank',1)">
 +
@@ -361,9 +375,14 @@ min-height:400px;
 -
 </button>
 
-<div class="count" id="coat">
-0
-</div>
+<input
+type="number"
+class="count-input"
+id="coat"
+value="0"
+min="0"
+oninput="calculate()"
+>
 
 <button onclick="changeCount('coat',1)">
 +
@@ -391,9 +410,14 @@ min-height:400px;
 -
 </button>
 
-<div class="count" id="segwang">
-0
-</div>
+<input
+type="number"
+class="count-input"
+id="segwang"
+value="0"
+min="0"
+oninput="calculate()"
+>
 
 <button onclick="changeCount('segwang',1)">
 +
@@ -431,9 +455,14 @@ min-height:400px;
 -
 </button>
 
-<div class="count" id="deliveryCount">
-0
-</div>
+<input
+type="number"
+class="count-input"
+id="deliveryCount"
+value="0"
+min="0"
+oninput="calculate()"
+>
 
 <button onclick="changeCount('deliveryCount',1)">
 +
@@ -503,12 +532,39 @@ const deliveryPrice={
 "북부":1000
 };
 
-const counts={
-tank:0,
-coat:0,
-segwang:0,
-deliveryCount:0
-};
+function getNumber(id){
+
+const value=Number(document.getElementById(id).value);
+
+if(isNaN(value)||value<0){
+return 0;
+}
+
+return value;
+
+}
+
+function setNumber(id,value){
+
+document.getElementById(id).value=value;
+
+}
+
+function changeCount(type,amount){
+
+let current=getNumber(type);
+
+current+=amount;
+
+if(current<0){
+current=0;
+}
+
+setNumber(type,current);
+
+calculate();
+
+}
 
 function renderPrices(){
 
@@ -591,11 +647,13 @@ row.className="row";
 
 row.innerHTML=`
 <span>🚗</span>
-<input type="number" class="literInput" placeholder="리터 입력">
+<input type="number" class="literInput" placeholder="리터 입력" min="0" oninput="calculate()">
 <span>L</span>
 `;
 
 container.appendChild(row);
+
+calculate();
 
 }
 
@@ -605,22 +663,8 @@ const container=document.getElementById("literContainer");
 
 if(container.children.length>1){
 container.removeChild(container.lastElementChild);
-}
-
-}
-
-function changeCount(type,amount){
-
-counts[type]+=amount;
-
-if(counts[type]<0){
-counts[type]=0;
-}
-
-document.getElementById(type).innerText=
-counts[type];
-
 calculate();
+}
 
 }
 
@@ -632,23 +676,34 @@ let totalLiter=0;
 
 inputs.forEach(input=>{
 
-totalLiter+=Number(input.value)||0;
+let value=Number(input.value)||0;
+
+if(value<0){
+value=0;
+}
+
+totalLiter+=value;
 
 });
+
+const tankCount=getNumber("tank");
+const coatCount=getNumber("coat");
+const segwangCount=getNumber("segwang");
+const deliveryCount=getNumber("deliveryCount");
 
 const fuelCost=totalLiter*selectedPrice;
 
 const tankCost=
-counts.tank*tankPrices[selectedPrice];
+tankCount*tankPrices[selectedPrice];
 
 const coatCost=
-counts.coat*500;
+coatCount*500;
 
 const segwangCost=
-counts.segwang*1000;
+segwangCount*1000;
 
 const deliveryCost=
-counts.deliveryCount*
+deliveryCount*
 deliveryPrice[selectedDelivery];
 
 const total=
@@ -666,17 +721,17 @@ ${totalLiter}L
 ⛽ 기름값:
 ${fuelCost}만
 
-🛢️ 기름통 ${counts.tank}개:
+🛢️ 기름통 ${tankCount}개:
 ${tankCost}만
 
-🧴 코팅제 ${counts.coat}개:
+🧴 코팅제 ${coatCount}개:
 ${coatCost}만
 
-✨ 세광 ${counts.segwang}개:
+✨ 세광 ${segwangCount}개:
 ${segwangCost}만
 
 🚚 ${selectedDelivery} 배달
-${counts.deliveryCount}회:
+${deliveryCount}회:
 ${deliveryCost}만`;
 
 document.getElementById("receipt").innerText=text;
@@ -705,15 +760,10 @@ selectedPrice=20;
 
 selectedDelivery="없음";
 
-counts.tank=0;
-counts.coat=0;
-counts.segwang=0;
-counts.deliveryCount=0;
-
-document.getElementById("tank").innerText=0;
-document.getElementById("coat").innerText=0;
-document.getElementById("segwang").innerText=0;
-document.getElementById("deliveryCount").innerText=0;
+setNumber("tank",0);
+setNumber("coat",0);
+setNumber("segwang",0);
+setNumber("deliveryCount",0);
 
 document.getElementById("literContainer").innerHTML="";
 
